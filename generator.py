@@ -7,7 +7,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 class ScriptGenerator:
     DEFAULT_BROWSER = "Firefox"
-    DEFAULT_WAIT = 5
 
     def generate_script(self, browser, url, actions):
         script = self._generate_import_statements()
