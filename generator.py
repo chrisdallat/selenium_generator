@@ -125,6 +125,7 @@ class SeleniumScriptGeneratorApp:
             script = self.script_generator.generate_script(selected_browser, url, actions)
             self.generated_script.delete("1.0", tk.END)
             self.generated_script.insert(tk.END, script)
+            self.root.update_idletasks()
             try:
                 exec(script)  # Run the generated script
                 # self.root.quit() #exit the GUI
@@ -138,4 +139,5 @@ class SeleniumScriptGeneratorApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = SeleniumScriptGeneratorApp(root)
+    root.wm_attributes('-topmost', 1) #set to stay on top
     root.mainloop()
