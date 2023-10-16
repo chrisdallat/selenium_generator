@@ -14,6 +14,7 @@ action|xPath|[optional depending on action]
 click|/html/body/div[2]/div[3]/div[3]/span/div/div/div/div[3]/div[1]/button[2]/div
 input|//*[@id="APjFqb"]|github.com/chrisdallat
 click|/html/body/div[1]/div[3]/form/div[1]/div[1]/div[4]/center/input[1]
+click|/html/body/div[5]/div/div[12]/div/div[2]/div[2]/div/div/div[1]/div/div/div[1]/div/div/span/a/h3
 ```
 
 (*this example will generate script to open private firefox browser on google, click accept cookies and enter in 'chrisdallat github' and click search*)
