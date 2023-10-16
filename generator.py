@@ -7,13 +7,14 @@ from selenium.webdriver.support import expected_conditions as EC
 
 class ScriptGenerator:
     DEFAULT_BROWSER = "Firefox"
+    DEFAULT_WAIT = 5
 
     def generate_script(self, browser, url, actions):
         script = self._generate_import_statements()
         script += f"driver = webdriver.{browser}()\n"
         script += f"driver.get('{url}')\n"
         script += self._generate_actions(actions)
-        script += "time.sleep(10)\n"
+        script += "time.sleep(5)\n"
         script += "driver.quit()\n"
         return script
 
@@ -34,29 +35,30 @@ class ScriptGenerator:
         return action_script
 
     def _generate_action(self, action):
+        wait = 5 #need to work out wait times
         action_type, xpath, value = action
         if action_type == "click":
             return (
-                f"wait = WebDriverWait(driver, 10)\n"
+                f"wait = WebDriverWait(driver, {wait})\n"
                 f"element = wait.until(EC.element_to_be_clickable((By.XPATH, '{xpath}')))\n"
                 f"element.click()\n"
             )
         elif action_type == "type":
             return (
-                f"wait = WebDriverWait(driver, 10)\n"
+                f"wait = WebDriverWait(driver, {wait})\n"
                 f"element = wait.until(EC.presence_of_element_located((By.XPATH, '{xpath}')))\n"
                 f"element.send_keys('{value}')\n"
             )
         elif action_type == "input":
             return (
-                f"wait = WebDriverWait(driver, 10)\n"
+                f"wait = WebDriverWait(driver, {wait})\n"
                 f"element = wait.until(EC.presence_of_element_located((By.XPATH, '{xpath}')))\n"
                 f"element.clear()\n"
                 f"element.send_keys('{value}')\n"
             )
         elif action_type == "submit":
             return (
-                f"wait = WebDriverWait(driver, 10)\n"
+                f"wait = WebDriverWait(driver, {wait})\n"
                 f"element = wait.until(EC.element_to_be_clickable((By.XPATH, '{xpath}')))\n"
                 f"element.submit()\n"
             )
