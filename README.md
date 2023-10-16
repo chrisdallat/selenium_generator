@@ -12,7 +12,7 @@ action|xPath|[optional depending on action]
 ```
 ```
 click|/html/body/div[2]/div[3]/div[3]/span/div/div/div/div[3]/div[1]/button[2]/div
-input|//*[@id="APjFqb"]|chrisdallat github
+input|//*[@id="APjFqb"]|github.com/chrisdallat
 click|/html/body/div[1]/div[3]/form/div[1]/div[1]/div[4]/center/input[1]
 ```
 

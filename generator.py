@@ -5,90 +5,97 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-def output_script(script):
-    with open("script.py", "w") as script_file:
-        script_file.write(script)
+class ScriptGenerator:
+    def generate_script(self, browser, url, actions):
+        script = ""
+        script += "from selenium import webdriver\n"
+        script += "from selenium.webdriver.common.by import By\n"
+        script += "from selenium.webdriver.support.ui import WebDriverWait\n"
+        script += "from selenium.webdriver.support import expected_conditions as EC\n"
+        script += f"driver = webdriver.{browser}()\n"
+        script += f"driver.get('{url}')\n"
 
-def generate_script():
-    selected_browser = browser_var.get()
-    if selected_browser == "Chrome":
-        driver = webdriver.Chrome()
-    elif selected_browser == "Firefox":
-        driver = webdriver.Firefox()
-    else:
-        generated_script.delete("1.0", tk.END)
-        generated_script.insert(tk.END, "Please select a browser.")
-        return
+        for action in actions:
+            action_type, xpath, value = action
+            if action_type == "click":
+                script += f"wait = WebDriverWait(driver, 10)\n"
+                script += f"element = wait.until(EC.element_to_be_clickable((By.XPATH, '{xpath}')))\n"
+                script += f"element.click()\n"
+            elif action_type == "type":
+                script += f"wait = WebDriverWait(driver, 10)\n"
+                script += f"element = wait.until(EC.presence_of_element_located((By.XPATH, '{xpath}')))\n"
+                script += f"element.send_keys('{value}')\n"
+            elif action_type == "input":
+                script += f"wait = WebDriverWait(driver, 10)\n"
+                script += f"element = wait.until(EC.presence_of_element_located((By.XPATH, '{xpath}')))\n"
+                script += f"element.clear()\n"
+                script += f"element.send_keys('{value}')\n"
+            elif action_type == "submit":
+                script += f"wait = WebDriverWait(driver, 10)\n"
+                script += f"element = wait.until(EC.element_to_be_clickable((By.XPATH, '{xpath}')))\n"
+                script += f"element.submit()\n"
 
-    script = ""
-    script += "from selenium import webdriver\n"
-    script += "from selenium.webdriver.common.by import By\n"
-    script += "from selenium.webdriver.support.ui import WebDriverWait\n"
-    script += "from selenium.webdriver.support import expected_conditions as EC\n"
-    script += f"driver = webdriver.{selected_browser}()\n"
+        script += "driver.quit()"
+        return script
 
-    url = url_entry.get()
-    script += f"driver.get('{url}')\n"
+class SeleniumScriptGeneratorApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Selenium Script Generator")
 
-    actions = actions_text.get("1.0", tk.END).strip().split("\n")
-    for action in actions:
-        parts = action.split("|")
-        action_type = parts[0].strip()
-        xpath = parts[1].strip()
-        value = parts[2].strip() if len(parts) > 2 else None
+        self.script_generator = ScriptGenerator()
 
-        if action_type == "click":
-            script += f"wait = WebDriverWait(driver, 10)\n"
-            script += f"element = wait.until(EC.element_to_be_clickable((By.XPATH, '{xpath}')))\n"
-            script += f"element.click()\n"
-        elif action_type == "type":
-            script += f"wait = WebDriverWait(driver, 10)\n"
-            script += f"element = wait.until(EC.presence_of_element_located((By.XPATH, '{xpath}')))\n"
-            script += f"element.send_keys('{value}')\n"
-        elif action_type == "input":
-            script += f"wait = WebDriverWait(driver, 10)\n"
-            script += f"element = wait.until(EC.presence_of_element_located((By.XPATH, '{xpath}')))\n"
-            script += f"element.clear()\n"
-            script += f"element.send_keys('{value}')\n"
-        elif action_type == "submit":
-            script += f"wait = WebDriverWait(driver, 10)\n"
-            script += f"element = wait.until(EC.element_to_be_clickable((By.XPATH, '{xpath}')))\n"
-            script += f"element.submit()\n"
+        browser_label = tk.Label(root, text="Select a Browser:")
+        browser_label.pack()
 
-    script += "driver.quit()"
+        self.browser_var = tk.StringVar()
+        self.browser_var.set("Firefox")  # Default selection
+        browser_option = ttk.Combobox(root, textvariable=self.browser_var, values=["Chrome", "Firefox"])
+        browser_option.pack()
 
-    generated_script.delete("1.0", tk.END)
-    generated_script.insert(tk.END, script)
+        url_label = tk.Label(root, text="URL:")
+        url_label.pack()
 
-    output_script(script)
+        self.url_entry = tk.Entry(root)
+        self.url_entry.pack()
 
-root = tk.Tk()
-root.title("Selenium Script Generator")
+        actions_label = tk.Label(root, text="Actions (One per line in format 'action|XPath|Value'):")
+        actions_label.pack()
 
-# Browser selection dropdown
-browser_var = tk.StringVar()
-browser_var.set("Chrome")  # Default selection
-browser_label = tk.Label(root, text="Select a Browser:")
-browser_label.pack()
-browser_option = ttk.Combobox(root, textvariable=browser_var, values=["Chrome", "Firefox"])
-browser_option.pack()
+        self.actions_text = tk.Text(root, height=10, width=50)
+        self.actions_text.pack()
 
-url_label = tk.Label(root, text="URL:")
-url_label.pack()
+        generate_button = tk.Button(root, text="Generate Script", command=self.generate_and_run_script)
+        generate_button.pack()
 
-url_entry = tk.Entry(root)
-url_entry.pack()
+        self.generated_script = tk.Text(root, height=10, width=50)
+        self.generated_script.pack()
 
-actions_label = tk.Label(root, text="Actions (One per line in format 'action|XPath|Value'):")
-actions_label.pack()
+    def generate_and_run_script(self):
+        selected_browser = self.browser_var.get()
+        url = self.url_entry.get()
+        actions_text = self.actions_text.get("1.0", tk.END).strip()
+        action_lines = [line.split('|') for line in actions_text.split('\n') if line.strip()]
+        
+        actions = []
 
-actions_text = tk.Text(root, height=10, width=50)
-actions_text.pack()
+        for action in action_lines:
+            action_type = action[0].strip() if len(action) > 0 else ""
+            xpath = action[1].strip() if len(action) > 1 else ""
+            value = action[2].strip() if len(action) > 2 else ""
+            actions.append((action_type, xpath, value))
 
-generate_button = tk.Button(root, text="Generate Script", command=generate_script)
-generate_button.pack()
+        if selected_browser and url and actions:
+            script = self.script_generator.generate_script(selected_browser, url, actions)
+            self.generated_script.delete("1.0", tk.END)
+            self.generated_script.insert(tk.END, script)
+            # self.root.quit()  # Exit the GUI
+            exec(script)  # Run the generated script
+        else:
+            self.generated_script.delete("1.0", tk.END)
+            self.generated_script.insert(tk.END, "Please select a browser, enter a URL, and define actions.")
 
-generated_script = tk.Text(root, height=10, width=50)
-generated_script.pack()
-
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = SeleniumScriptGeneratorApp(root)
+    root.mainloop()
